@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { Fragment, useState } from 'react';
 import Button from '@material-ui/core/Button';
 import wiki from './handledocumentation';
 
-const onChangeFileUpload = (selectorFiles) =>{
+const onChangeFileUpload = (selectorFiles, reloadFunc) =>{
 
-    wiki.test();
+	wiki.test();
+	reloadFunc(selectorFiles[0].name);
 }
 
-const am_form = () => {
+const Amform = () => {
+	const [filename, setFilename] = useState(
+		'None'
+	  );
     return (
+		<Fragment>
         <Button
   variant="contained"
   component="label"
@@ -18,9 +23,11 @@ const am_form = () => {
     type="file"
     style={{ display: "none" }}
     accept=".csv"
-    onChange={(e) => onChangeFileUpload(e.target.files)}
+    onInput={(e) => onChangeFileUpload(e.target.files, setFilename)}
   />
 </Button>
-    )
+<span>actual file: {filename}</span>
+</Fragment>
+)
 }
-export default am_form;
+export default Amform;
