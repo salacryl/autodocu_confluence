@@ -19,16 +19,18 @@ $localadmins = Get-CimInstance -ClassName win32_group -Filter "name = 'administr
 
 #Get list of shares
 $Shares = Get-WmiObject Win32_share | Where {$_.name -NotLike "*$"}
+$servicetag = Get-Wmiobject win32_bios 
 $infoObject = New-Object PSObject
+
 
 #Add data to the infoObjects.
 Add-Member -inputObject $infoObject -memberType NoteProperty -name "ServerName" -value $CPUInfo.SystemName
+Add-Member -inputObject $infoObject -memberType NoteProperty -name "SerialNumber" -value $servicetag.SerialNUmber
 Add-Member -inputObject $infoObject -memberType NoteProperty -name "CPU_Name" -value $CPUInfo.Name
 Add-Member -inputObject $infoObject -memberType NoteProperty -name "TotalMemory_GB" -value $PhysicalMemory
 Add-Member -inputObject $infoObject -memberType NoteProperty -name "OS_Name" -value $OSInfo.Caption
 Add-Member -inputObject $infoObject -memberType NoteProperty -name "OS_Version" -value $OSInfo.Version
 
-$i = 0;
 forEach($ip in $Network)
 {
 	$astring = $astring + ", "+ $ip.IPAddress -join ", "
