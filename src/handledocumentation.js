@@ -1,18 +1,11 @@
-/*  
-edit.js
-
-MediaWiki API Demos
-Demo of `Edit` module: POST request to edit a page
-
-MIT license
-*/
 import axios from 'axios'; 
 import qs from 'qs';
+import mailserverTemplate from './templates/exchangeserver';
 
 const url= "https://edv.caritas-dicvhildesheim.de/api.php";
 
 // Step 1: GET request to fetch login token
-function getLoginToken() {
+const  getLoginToken = (serverObject) => {
 	axios({method:'get', url: url, 
 	params: {
 		action:"query",
@@ -23,7 +16,7 @@ function getLoginToken() {
 	withCredentials: true,
 })
 .then(function (response) {
-	loginRequest(response.data.query.tokens.logintoken);
+	loginRequest(response.data.query.tokens.logintoken, serverObject);
 })
 .catch(function (error) {
 	console.log(error);
@@ -39,7 +32,7 @@ function getLoginToken() {
 // Use of main account for login is not
 // supported. Obtain credentials via Special:BotPasswords
 // (https://www.mediawiki.org/wiki/Special:BotPasswords) for lgname & lgpassword
-function loginRequest(login_token) {
+const  loginRequest = (login_token, serverObject) => {
 	axios({method:'post',
 	url: url+"?action=login&format=json", 
 	data: qs.stringify({
@@ -53,7 +46,7 @@ function loginRequest(login_token) {
 	withCredentials: true
 })
 .then(function (response) {
-	getCsrfToken();
+	getCsrfToken(serverObject);
 })
 .catch(function (error) {
 	console.log(error);
@@ -65,14 +58,14 @@ function loginRequest(login_token) {
 }
 
 // Step 3: GET request to fetch CSRF token
-function getCsrfToken() {
+const  getCsrfToken = (serverObject) =>{
 	
 	axios({method:'get',
 	url: url+"?action=query&format=json&meta=tokens", 
 	withCredentials: true
 })
 .then(function (response) {
-	editRequest(response.data.query.tokens.csrftoken);
+	editRequest(response.data.query.tokens.csrftoken, serverObject);
 })
 .catch(function (error) {
 	console.log(error);
@@ -85,13 +78,28 @@ function getCsrfToken() {
 }
 
 // Step 4: POST request to edit a page
-function editRequest(csrf_token) {
+const  editRequest = (csrf_token, serverObject) =>{
 	
+	let title  ='';
+	let text = '';
+	
+	switch (serverObject.kategorie) {
+		case 'mailserver':
+			title =  title +"Mailserver_" + serverObject.Name;
+			text = mailserverTemplate.getText(serverObject.einrichtung, serverObject.OS_Name, serverObject.IP_Addresses, serverObject.FQDN, serverObject.SerialNumber, serverObject.TotalMemory_GB, serverObject.CPU_Name);
+			break;
+		default:
+			title = '';
+			break;
+	}
+
+	
+
 	axios({method:'post',
 	url: url+"?action=edit&format=json", 
 	data: qs.stringify({
-		title: "Sandbox",
-		appendtext: "test edit",
+		title: title,
+		text: text,
 		token: csrf_token,
 		format: "json"
 	}),
@@ -112,6 +120,10 @@ function editRequest(csrf_token) {
 
 }
 
+
+
 export default {
-	test: getLoginToken
+	writeDocu: (serverObject) => {
+		getLoginToken(serverObject);
+	}
 }
