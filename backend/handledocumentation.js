@@ -2,11 +2,17 @@ import axios from 'axios';
 import qs from 'qs';
 import mailserverTemplate from './templates/exchangeserver';
 
+import axiosCookieJarSupport  from 'axios-cookiejar-support';
+import  tough from 'tough-cookie';
+ 
+axiosCookieJarSupport(axios);
+ 
+const cookieJar = new tough.CookieJar();
 const url= "https://edv.caritas-dicvhildesheim.de/api.php";
 
 // Step 1: GET request to fetch login token
-const  getLoginToken = (serverObject) => {
-	axios({method:'get', url: url, 
+const  getLoginToken = (serverObject, cb) => {
+	axios({method:'get', url: url, jar: cookieJar,
 	params: {
 		action:"query",
 		meta: "tokens",
@@ -16,7 +22,7 @@ const  getLoginToken = (serverObject) => {
 	withCredentials: true,
 })
 .then(function (response) {
-	loginRequest(response.data.query.tokens.logintoken, serverObject);
+	loginRequest(response.data.query.tokens.logintoken, serverObject, cb );
 })
 .catch(function (error) {
 	console.log(error);
@@ -32,21 +38,23 @@ const  getLoginToken = (serverObject) => {
 // Use of main account for login is not
 // supported. Obtain credentials via Special:BotPasswords
 // (https://www.mediawiki.org/wiki/Special:BotPasswords) for lgname & lgpassword
-const  loginRequest = (login_token, serverObject) => {
+const  loginRequest = (login_token, serverObject, cb) => {
+	
 	axios({method:'post',
 	url: url+"?action=login&format=json", 
+	jar: cookieJar,
 	data: qs.stringify({
 		lgname: "Meier@autodocu",
-		lgpassword: "d7ujcjdk67g8i9mbtvbsat2hbpuk3m2h",
+		lgpassword: "d7ujcjdk67g8i9mbtvbsat2hbpuk3m2h", 
 		lgtoken: login_token,
 	}),
 	headers: { 
 		"Content-Type": "application/x-www-form-urlencoded"
-	},
+	}, 
 	withCredentials: true
 })
 .then(function (response) {
-	getCsrfToken(serverObject);
+		getCsrfToken(serverObject, cb);
 })
 .catch(function (error) {
 	console.log(error);
@@ -58,14 +66,15 @@ const  loginRequest = (login_token, serverObject) => {
 }
 
 // Step 3: GET request to fetch CSRF token
-const  getCsrfToken = (serverObject) =>{
+const  getCsrfToken = (serverObject, cb ) =>{
 	
 	axios({method:'get',
-	url: url+"?action=query&format=json&meta=tokens", 
+	url: url+"?action=query&format=json&meta=tokens",
+	jar: cookieJar, 
 	withCredentials: true
 })
 .then(function (response) {
-	editRequest(response.data.query.tokens.csrftoken, serverObject);
+	editRequest(response.data.query.tokens.csrftoken, serverObject, cb );
 })
 .catch(function (error) {
 	console.log(error);
@@ -78,11 +87,11 @@ const  getCsrfToken = (serverObject) =>{
 }
 
 // Step 4: POST request to edit a page
-const  editRequest = (csrf_token, serverObject) =>{
+const  editRequest = (csrf_token, serverObject, cb) =>{
 	
 	let title  ='';
 	let text = '';
-	
+	console.log(serverObject);
 	switch (serverObject.kategorie) {
 		case 'mailserver':
 			title =  title +"Mailserver_" + serverObject.Name;
@@ -97,6 +106,7 @@ const  editRequest = (csrf_token, serverObject) =>{
 
 	axios({method:'post',
 	url: url+"?action=edit&format=json", 
+	jar: cookieJar,
 	data: qs.stringify({
 		title: title,
 		text: text,
@@ -109,10 +119,12 @@ const  editRequest = (csrf_token, serverObject) =>{
 	withCredentials: true
 })
 .then(function (response) {
-	console.log(response.data);
+	console.log(response.data)
+	cb(response.data.edit.result);
 })
 .catch(function (error) {
 	console.log(error);
+	cb("error");
 })
 .finally(function () {
 	// always executed
@@ -123,7 +135,7 @@ const  editRequest = (csrf_token, serverObject) =>{
 
 
 export default {
-	writeDocu: (serverObject) => {
-		getLoginToken(serverObject);
+	writeDocu: (serverObject, cb) => {
+		getLoginToken(serverObject, cb);
 	}
 }
