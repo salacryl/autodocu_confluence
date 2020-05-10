@@ -65,8 +65,8 @@ const loginRequest = (login_token, serverObject, cb) => {
 		url: url + "?action=login&format=json",
 		jar: cookieJar,
 		data: qs.stringify({
-			lgname: "Meier@autodocu",
-			lgpassword: "d7ujcjdk67g8i9mbtvbsat2hbpuk3m2h",
+			lgname: serverObject.username,
+			lgpassword: serverObject.password,
 			lgtoken: login_token,
 		}),
 		headers: {
@@ -113,9 +113,8 @@ const editRequest = (csrf_token, serverObject, cb) => {
 
 	let title = '';
 	let text = '';
-	console.log(serverObject);
 	switch (serverObject.kategorie) {
-		case 'domaincoller':
+		case 'domaincontroller':
 			title = title + "Domaincontroller_" + serverObject.Name;
 			text = domaincontrollerTemplate.getText(serverObject.einrichtung, serverObject.OS_Name, serverObject.IP_Addresses, serverObject.FQDN, serverObject.SerialNumber, serverObject.TotalMemory_GB, serverObject.CPU_Name);
 			break;

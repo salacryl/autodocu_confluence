@@ -1,8 +1,9 @@
-#Defining import and export variables
-$outreport = "C:\temp\Server_Inventory_" + $((Get-Date).ToString('MM-dd-yyyy')) + ".csv"
-
-#Start PSRemoting.
-Invoke-Command  -scriptblock {
+param(
+	[string]$kategorie,
+	[string]$einrichtung,
+	[string]$username,
+	[string]$password
+)
 
 #Run the commands concurrently for each server in the list
 $CPUInfo = Get-WmiObject Win32_Processor #Get CPU Information
@@ -17,10 +18,25 @@ $PhysicalMemory = Get-WmiObject CIM_PhysicalMemory | Measure-Object -Property ca
 $Network = Get-WmiObject Win32_NetworkAdapterConfiguration -Filter 'ipenabled = "true"'
 
 $servicetag = Get-Wmiobject win32_bios 
+$anomObject = New-Object PSObject
 $infoObject = New-Object PSObject
+
+Add-Member -inputObject $anomObject -memberType NoteProperty -name "kategorie" -value $kategorie
+Add-Member -inputObject $anomObject -memberType NoteProperty -name "einrichtung" -value $einrichtung
+Add-Member -inputObject $anomObject -memberType NoteProperty -name "FQDN" -value $fqdn
+Add-Member -inputObject $anomObject -memberType NoteProperty -name "Name" -value $Name
+Add-Member -inputObject $anomObject -memberType NoteProperty -name "SerialNumber" -value $servicetag.SerialNUmber
+Add-Member -inputObject $anomObject -memberType NoteProperty -name "CPU_Name" -value $CPUInfo.Name
+Add-Member -inputObject $anomObject -memberType NoteProperty -name "TotalMemory_GB" -value $PhysicalMemory
+Add-Member -inputObject $anomObject -memberType NoteProperty -name "OS_Name" -value $OSInfo.Caption
+Add-Member -inputObject $anomObject -memberType NoteProperty -name "OS_Version" -value $OSInfo.Version
 
 
 #Add data to the infoObjects.
+Add-Member -inputObject $infoObject -memberType NoteProperty -name "kategorie" -value $kategorie
+Add-Member -inputObject $infoObject -memberType NoteProperty -name "einrichtung" -value $einrichtung
+Add-Member -inputObject $infoObject -memberType NoteProperty -name "username" -value $username
+Add-Member -inputObject $infoObject -memberType NoteProperty -name "password" -value $password
 Add-Member -inputObject $infoObject -memberType NoteProperty -name "FQDN" -value $fqdn
 Add-Member -inputObject $infoObject -memberType NoteProperty -name "Name" -value $Name
 Add-Member -inputObject $infoObject -memberType NoteProperty -name "SerialNumber" -value $servicetag.SerialNUmber
@@ -34,4 +50,7 @@ forEach($ip in $Network)
 	$astring = $astring + ", "+ $ip.IPAddress -join ", "
 }
 Add-Member -inputObject $infoObject -memberType NoteProperty -name "IP_Addresses" -value $astring
-$infoObject} | Select-Object * -ExcludeProperty PSComputerName, RunspaceId, PSShowComputerName | Export-Csv -path $outreport -NoTypeInformation
+$jsonObject = $infoObject | Select-Object * -ExcludeProperty PSComputerName, RunspaceId, PSShowComputerName | ConvertTo-Json
+write-host "Daten die hochgeladen werden:"
+$anomObject | ConvertTo-Json
+Invoke-WebRequest -Uri http://localhost:5000 -Proxy "http://localhost:8888" -Method POST -Body ($jsonObject) -ContentType "application/json"

@@ -1,10 +1,8 @@
 import React, { Fragment, useState } from 'react';
-import Button from '@material-ui/core/Button';
-import axios from 'axios';
-import csvtojson from 'csvtojson';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core';
 
 const styles = makeStyles({
@@ -25,48 +23,21 @@ const styles = makeStyles({
 
 const Amform = () => {
 	const classes = styles();
-	const [einrichtung, setEinrichtung] = useState('dicvhi');
-	const [kategorie, setKategorie] = useState('mailserver');
-	const [uploadStatus, setUploadStatus] = useState('');
+	const [einrichtung, setEinrichtung] = useState({jsx: <span style={{color: 'red'}}>Wähle eine Einrichtung</span>, text: '',});
+	const [kategorie, setKategorie] = useState({jsx: <span style={{color: 'red'}}>Wähle eine Serverkategorie</span>, text: ''});
 	const handleEinrichtungChange = e => {
-		setEinrichtung(e.target.value);
+		setEinrichtung({jsx: <span style={{color: 'white'}}>{e.target.value}</span>, text:e.target.value});
 	}
-
-	let result = <div style={{ marginTop: 50 }}><h3 >Waiting for upload ... </h3></div>
-	if (uploadStatus !== '')
-		result = <div style={{ marginTop: 50 }}><h3 >Upload and edit result: {uploadStatus} </h3></div>
 	const handleKategorieChange = e => {
-		setKategorie(e.target.value);
-	}
-	const onChangeFileUpload = (selectorFiles) => {
-		const formData = new FormData()
-		formData.append('file', selectorFiles[0]);
-		axios.post('http://www.deliancourt.org:25478/upload?token=f9403fc5f537b4ab332d', formData)
-			.then(res => {
-				if (res.data.ok) {
-					axios.get('http://www.deliancourt.org:25478/files/' + selectorFiles[0].name + '?token=f9403fc5f537b4ab332d')
-						.then(res => {
-							csvtojson()
-								.fromString(res.data)
-								.then((Row) => {
-									Row[0].kategorie = kategorie;
-									Row[0].einrichtung = einrichtung;
-									axios.post('http://localhost:5000', { data: Row[0] })
-										.then(res => {
-											setUploadStatus(res.data.editingstatus);
-										});
-								})
-						})
-				}
-			})
-	}
+		setKategorie({jsx: <span style={{color: 'white'}}>{e.target.value}</span>, text:e.target.value});
+	} 
 	return (
 		<Fragment>
 			<InputLabel style={{ color: 'white', marginTop: 50 }} id="demo-simple-select-label">Einrichtung wählen</InputLabel>
 			<Select
 				labelId="demo-simple-select-label"
 				id="demo-simple-select"
-				value={einrichtung}
+				value={einrichtung.text}
 				onChange={handleEinrichtungChange}
 				className={classes.select}
 				inputProps={{
@@ -74,7 +45,6 @@ const Amform = () => {
 						icon: classes.icon,
 					},
 				}}
-
 			>
 				<MenuItem value={'dicvhi'}>Caritasverband für die Diözese Hildesheim e. V.</MenuItem>
 				<MenuItem value={'stmonika'}>Altenpflegeheim St. Monika</MenuItem>
@@ -106,7 +76,7 @@ const Amform = () => {
 			<Select
 				labelId="demo-simple-select-label"
 				id="demo-simple-select"
-				value={kategorie}
+				value={kategorie.text}
 				onChange={handleKategorieChange}
 				className={classes.select}
 				inputProps={{
@@ -133,21 +103,10 @@ const Amform = () => {
 				<MenuItem value={'citrix_node'}>Citrix Cluster-Node</MenuItem>
 				<MenuItem value={'citrix_workerclone'}>Citrix Worker-Klon</MenuItem>
 			</Select>
-			<Button
-				variant="contained"
-				component="label"
-				style={{ marginTop: 50 }}
-				color='primary'
-			>
-				Upload Documention File
-			    <input
-					type="file"
-					style={{ marginTop: 10, display: 'none' }}
-					accept=".csv"
-					onInput={(e) => onChangeFileUpload(e.target.files)}
-				/>
-			</Button>
-			{result}
+			<h4>Befehl für Linux:</h4>
+			<Typography>wget https://autodoc.deliancourt.org/scripts/inventory.sh; /bin/bash inventory.sh {kategorie.jsx} {einrichtung.jsx} {"<"}username{">"} {"<"}password{">"}</Typography>
+			<h4>Befehl für Windows (Powershell):</h4>
+			<Typography>wget https://autodoc.deliancourt.org/scripts/inventory.ps1 -outfile "inventory.ps1"; .\inventory.ps1 -kategorie {kategorie.jsx} -einrichtung {einrichtung.jsx} -username {"<"}username{">"} -password {"<"}password{">"}</Typography>
 		</Fragment>
 	)
 }

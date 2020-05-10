@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [ "$#" -ne 2 ]; then
-    printf "Das Script braucht als Argument die Kategorie des Servers und die Einrichtung.
+    printf "Das Script braucht als Argument die Kategorie des Servers, die Einrichtung und die Zugangsdaten.
 
-Beispiel: inventory.sh mailserver dicvhi
+Beispiel: inventory.sh mailserver dicvhi <username> <password>
 
 Liste von Serverkategorien:
 
@@ -96,5 +96,19 @@ output=$(printf "{
 }")
 
 echo -e "Daten die hochgeladen werden:\n$output"
+
+output=$(printf "{
+\"username\": \"$3\",
+\"password\": \"$4\",
+\"kategorie\": \"$1\",
+\"einrichtung\": \"$2\",
+\"OS_Name\": \"$OS\",
+\"IP_Addresses\" : \"$IPs\",
+\"FQDN\": \"$FQDN\",
+\"Name\": \"$Name\",
+\"SerialNumber\": \"$Serial\",
+\"TotalMemory_GB\": \"$Mem\",
+\"CPU_Name\": \"$CPU\"
+}")
 
 curl -d "$output" -H 'Content-Type: application/json' https://autodoc.deliancourt.org

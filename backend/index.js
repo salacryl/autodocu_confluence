@@ -44,7 +44,10 @@ app.use(bodyParser.json());
 
 // default route 
 app.post("/", (req, res) => {
-	wiki.writeDocu(req.body.data, (result) => {
+	let object = req.body;
+	if (undefined !== req.body.data)
+		object = req.body.data;
+	wiki.writeDocu(object, (result) => {
 		res.json({editingstatus: result,});
 	});
 
