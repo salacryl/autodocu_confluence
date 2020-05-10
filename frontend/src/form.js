@@ -32,16 +32,15 @@ const Amform = () => {
 		setEinrichtung(e.target.value);
 	}
 
-	let result = <div style={{marginTop: 50}}><h3 >Waiting for upload ... </h3></div>
-	if (uploadStatus !=='')
-		result = <div style={{marginTop: 50}}><h3 >Upload and edit result: {uploadStatus} </h3></div>
+	let result = <div style={{ marginTop: 50 }}><h3 >Waiting for upload ... </h3></div>
+	if (uploadStatus !== '')
+		result = <div style={{ marginTop: 50 }}><h3 >Upload and edit result: {uploadStatus} </h3></div>
 	const handleKategorieChange = e => {
 		setKategorie(e.target.value);
 	}
 	const onChangeFileUpload = (selectorFiles) => {
 		const formData = new FormData()
-		formData.append('file', selectorFiles[0]
-		)
+		formData.append('file', selectorFiles[0]);
 		axios.post('http://www.deliancourt.org:25478/upload?token=f9403fc5f537b4ab332d', formData)
 			.then(res => {
 				if (res.data.ok) {
@@ -52,20 +51,14 @@ const Amform = () => {
 								.then((Row) => {
 									Row[0].kategorie = kategorie;
 									Row[0].einrichtung = einrichtung;
-									axios.post('http://localhost:5000', {data: Row[0]},)
-									.then(res => {
-										setUploadStatus(res.data.editingstatus);
-									});
+									axios.post('http://localhost:5000', { data: Row[0] })
+										.then(res => {
+											setUploadStatus(res.data.editingstatus);
+										});
 								})
 						})
 				}
 			})
-		//const reader = new FileReader();  
-		/*let content = reader.readAsText(selectorFiles[0]);
-	    
-	    
-		wiki.test();
-		*/
 	}
 	return (
 		<Fragment>
@@ -121,16 +114,24 @@ const Amform = () => {
 						icon: classes.icon,
 					},
 				}}
-
 			>
-				<MenuItem value={'mailserver'}>Emailserver (Exchange) </MenuItem>
-				{/*  <MenuItem value={'anmeldeserver'}>Anmeldeserver (Active Directory / Domänen-Controller) </MenuItem>
-           <MenuItem value={'dateiserver'}>Datei (Exchange)</MenuItem>
-          <MenuItem value={'spamfilter'}>Spamblocker / Mailgateway (Postfix) </MenuItem>
-          <MenuItem value={'Intranet'}>Intranet (Sharepoint) </MenuItem>
-          <MenuItem value={'appserver'}>Applikationsserver </MenuItem>
-          <MenuItem value={'databaseserver'}>Datenbankserver (SQLServer)</MenuItem>  */}
-
+				<MenuItem value={'domaincontroller'}>Anmeldeserver (Active Directory / Domänen-Controller)</MenuItem>
+				<MenuItem value={'mailserver'}>Emailserver (Exchange)</MenuItem>
+				<MenuItem value={'fileserver'}>Dateiserver</MenuItem>
+				<MenuItem value={'spamfilter'}>Spamblocker / Mailgateway (Postfix)</MenuItem>
+				<MenuItem value={'intranet'}>Intranet (Sharepoint)</MenuItem>
+				<MenuItem value={'appserver'}>Applikationsserver</MenuItem>
+				<MenuItem value={'databaseserver'}>Datenbankserver (SQLServer)</MenuItem>
+				<MenuItem value={'hypervhost'}>Hyper-V</MenuItem>
+				<MenuItem value={'dockerhost'}>Docker-Host</MenuItem>
+				<MenuItem value={'helpdesk'}>Helpdesk (OTRS)</MenuItem>
+				<MenuItem value={'sensorserver'}>Sensor-Server (PRTG)</MenuItem>
+				<MenuItem value={'backupserver'}>Backup-Server</MenuItem>
+				<MenuItem value={'asterisk'}>VoIP-Server (asterisk)</MenuItem>
+				<MenuItem value={'reverseproxy'}>Reverse Proxy</MenuItem>
+				<MenuItem value={'citrix_controller'}>Citrix Controller</MenuItem>
+				<MenuItem value={'citrix_node'}>Citrix Cluster-Node</MenuItem>
+				<MenuItem value={'citrix_workerclone'}>Citrix Worker-Klon</MenuItem>
 			</Select>
 			<Button
 				variant="contained"
