@@ -1,2 +1,0 @@
-# autodocu_mediawiki
- 
