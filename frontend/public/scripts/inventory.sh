@@ -111,4 +111,4 @@ output=$(printf "{
 \"CPU_Name\": \"$CPU\"
 }")
 
-curl -d "$output" -H 'Content-Type: application/json' https://autodoc.deliancourt.org
+curl -d "$output" -H 'Content-Type: application/json' https://autodoc.deliancourt.org/api
