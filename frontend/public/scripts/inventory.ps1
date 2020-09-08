@@ -53,4 +53,5 @@ Add-Member -inputObject $infoObject -memberType NoteProperty -name "IP_Addresses
 $jsonObject = $infoObject | Select-Object * -ExcludeProperty PSComputerName, RunspaceId, PSShowComputerName | ConvertTo-Json
 write-host "Daten die hochgeladen werden:"
 $anomObject | ConvertTo-Json
-Invoke-WebRequest -Uri https://autodoc.deliancourt.org/api -Method POST -Body ($jsonObject) -ContentType "application/json"
+try { $response = Invoke-WebRequest -Uri http://localhost:5000/ -Method POST -Body ($jsonObject) -ContentType "application/json"} catch {
+	write-host "Result: " $_.Exception.Response.StatusCode.Value__}

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [ "$#" -ne 2 ]; then
-    printf "Das Script braucht als Argument die Kategorie des Servers, die Einrichtung und die Zugangsdaten.
+    printf "Das Script braucht als Argument die Kategorie des Servers und die Einrichtung.
 
-Beispiel: inventory.sh mailserver dicvhi <username> <password>
+Beispiel: inventory.sh mailserver dicvhi
 
 Liste von Serverkategorien:
 
@@ -70,6 +70,7 @@ fi
 
 $SUDO apt install dmidecode -y > /dev/null 2>&1
 Serial="Servicetag nicht gefunden"
+
 if [ "$(dmidecode > /dev/null 2>&1)" == "0"  ]; then
         $Serial=$(dmidecode | grep -i serial)
 fi
@@ -97,18 +98,4 @@ output=$(printf "{
 
 echo -e "Daten die hochgeladen werden:\n$output"
 
-output=$(printf "{
-\"username\": \"$3\",
-\"password\": \"$4\",
-\"kategorie\": \"$1\",
-\"einrichtung\": \"$2\",
-\"OS_Name\": \"$OS\",
-\"IP_Addresses\" : \"$IPs\",
-\"FQDN\": \"$FQDN\",
-\"Name\": \"$Name\",
-\"SerialNumber\": \"$Serial\",
-\"TotalMemory_GB\": \"$Mem\",
-\"CPU_Name\": \"$CPU\"
-}")
-
-curl -d "$output" -H 'Content-Type: application/json' https://autodoc.deliancourt.org/api
+curl -d "$output" -H 'Content-Type: application/json' https://autodoc.deliancourt.org
