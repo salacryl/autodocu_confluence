@@ -29,7 +29,7 @@
     "jsdoc": "^3.6.3",
     "method-override": "^3.0.0",
     "nodemon": "^2.0.2",
-    "qs": "^6.9.4",
+    "qs": "^6.9.7",
     "tough-cookie": "^4.0.0",
     "tunnel": "0.0.6",
     "winston": "^3.2.1"
